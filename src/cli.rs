@@ -3,6 +3,7 @@ use std::io::{self, IsTerminal, Read};
 use std::path::PathBuf;
 
 use crate::audio::{create_temp_audio_file, play_audio_and_cleanup};
+use crate::audio_merge::{check_ffmpeg_available, merge_audio_files};
 use crate::config::{get_presets_map, list_presets, load_config, Config};
 use crate::text_splitter::{check_text_length, split_text, MAX_CHARS};
 use crate::voicepeak::{list_emotion, list_narrator, VoicepeakCommand};
@@ -89,6 +90,14 @@ pub fn build_cli() -> Command {
                 .long("strict-length")
                 .help("Reject input longer than 140 characters (default: false, allows splitting)")
                 .action(clap::ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("playback-mode")
+                .long("playback-mode")
+                .value_name("MODE")
+                .help("Playback mode: sequential or batch (default: batch)")
+                .value_parser(["sequential", "batch"])
+                .default_value("batch"),
         )
 }
 
@@ -194,6 +203,7 @@ fn run_voicepeak(
     let should_play = matches.get_one::<String>("out").is_none();
     let output_path = matches.get_one::<String>("out").map(PathBuf::from);
     let strict_length = matches.get_flag("strict-length");
+    let playback_mode = matches.get_one::<String>("playback-mode").unwrap();
 
     if strict_length && !check_text_length(&input_text) {
         return Err(format!(
@@ -212,10 +222,93 @@ fn run_voicepeak(
         );
     }
 
+    // Check ffmpeg availability for batch mode
+    if (playback_mode == "batch" || (!should_play && text_chunks.len() > 1)) && !check_ffmpeg_available() {
+        return Err(
+            "ffmpeg is required for batch mode and multi-chunk file output.\n\
+            Please install ffmpeg or use --playback-mode sequential for auto-play mode.\n\
+            Install ffmpeg: https://ffmpeg.org/download.html".into()
+        );
+    }
+
     if should_play {
+        // Auto-play mode
+        if playback_mode == "sequential" {
+            // Sequential mode: generate and play one by one
+            for (i, chunk) in text_chunks.iter().enumerate() {
+                if text_chunks.len() > 1 {
+                    println!("Playing part {}/{}", i + 1, text_chunks.len());
+                }
+
+                let temp_path = create_temp_audio_file()?;
+
+                let mut cmd = VoicepeakCommand::new()
+                    .text(chunk)
+                    .narrator(&narrator)
+                    .emotion(&emotion)
+                    .output(&temp_path);
+
+                if let Some(speed) = speed {
+                    cmd = cmd.speed(speed);
+                }
+                if let Some(pitch) = &pitch {
+                    cmd = cmd.pitch(pitch);
+                }
+
+                cmd.execute()?;
+                play_audio_and_cleanup(&temp_path)?;
+            }
+        } else {
+            // Batch mode: generate all, merge, then play
+            let mut temp_files = Vec::new();
+            
+            for (i, chunk) in text_chunks.iter().enumerate() {
+                if text_chunks.len() > 1 {
+                    println!("Generating part {}/{}", i + 1, text_chunks.len());
+                }
+
+                let temp_path = create_temp_audio_file()?;
+
+                let mut cmd = VoicepeakCommand::new()
+                    .text(chunk)
+                    .narrator(&narrator)
+                    .emotion(&emotion)
+                    .output(&temp_path);
+
+                if let Some(speed) = speed {
+                    cmd = cmd.speed(speed);
+                }
+                if let Some(pitch) = &pitch {
+                    cmd = cmd.pitch(pitch);
+                }
+
+                cmd.execute()?;
+                temp_files.push(temp_path);
+            }
+
+            if text_chunks.len() > 1 {
+                println!("Merging audio files...");
+            }
+
+            // Merge and play
+            let final_temp = create_temp_audio_file()?;
+            let temp_paths: Vec<&std::path::Path> = temp_files.iter().map(|p| p.as_path()).collect();
+            merge_audio_files(&temp_paths, &final_temp)?;
+            
+            // Cleanup individual temp files
+            for temp_file in temp_files {
+                let _ = std::fs::remove_file(temp_file);
+            }
+
+            play_audio_and_cleanup(&final_temp)?;
+        }
+    } else if let Some(output_path) = output_path {
+        // File output mode
+        let mut temp_files = Vec::new();
+        
         for (i, chunk) in text_chunks.iter().enumerate() {
             if text_chunks.len() > 1 {
-                println!("Playing part {}/{}", i + 1, text_chunks.len());
+                println!("Generating part {}/{}", i + 1, text_chunks.len());
             }
 
             let temp_path = create_temp_audio_file()?;
@@ -234,30 +327,23 @@ fn run_voicepeak(
             }
 
             cmd.execute()?;
-            play_audio_and_cleanup(&temp_path)?;
+            temp_files.push(temp_path);
         }
-    } else if let Some(output_path) = output_path {
-        if text_chunks.len() == 1 {
-            let mut cmd = VoicepeakCommand::new()
-                .text(&text_chunks[0])
-                .narrator(&narrator)
-                .emotion(&emotion)
-                .output(&output_path);
 
-            if let Some(speed) = speed {
-                cmd = cmd.speed(speed);
-            }
-            if let Some(pitch) = &pitch {
-                cmd = cmd.pitch(pitch);
-            }
-
-            cmd.execute()?;
-        } else {
-            return Err(
-                "Cannot save multiple chunks to a single file. Use auto-play mode for long texts."
-                    .into(),
-            );
+        if text_chunks.len() > 1 {
+            println!("Merging audio files...");
         }
+
+        // Merge to final output
+        let temp_paths: Vec<&std::path::Path> = temp_files.iter().map(|p| p.as_path()).collect();
+        merge_audio_files(&temp_paths, &output_path)?;
+        
+        // Cleanup temp files
+        for temp_file in temp_files {
+            let _ = std::fs::remove_file(temp_file);
+        }
+
+        println!("Audio saved to: {}", output_path.display());
     }
 
     Ok(())

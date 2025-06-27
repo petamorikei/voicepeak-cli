@@ -18,6 +18,7 @@
 - macOS
 - [VOICEPEAK](https://www.ai-j.jp/voicepeak/) が `/Applications/voicepeak.app/` にインストール済み
 - [mpv](https://mpv.io/) 音声再生用 (Homebrew経由でインストール: `brew install mpv`)
+- [ffmpeg](https://ffmpeg.org/) バッチモードと複数チャンクファイル出力用 (Homebrew経由でインストール: `brew install ffmpeg`)
 
 ## インストール
 
@@ -91,6 +92,22 @@ vp "非常に長いテキスト..."
 
 # 厳格モード: 140文字を超えるテキストを拒否
 vp "テキスト" --strict-length
+```
+
+### 再生モード
+
+```bash
+# バッチモード: 全チャンクを生成後、結合して再生（デフォルト）
+vp "長いテキスト" --playback-mode batch
+
+# シーケンシャルモード: チャンクを1つずつ生成・再生
+vp "長いテキスト" --playback-mode sequential
+
+# 長いテキストのファイル出力（ffmpegでチャンクを結合）
+vp "非常に長いテキスト" -o output.wav
+
+# ffmpegなしでのシーケンシャル再生
+vp "長いテキスト" --playback-mode sequential
 ```
 
 ## 設定

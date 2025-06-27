@@ -18,6 +18,7 @@ A command-line interface wrapper for VOICEPEAK text-to-speech software with pres
 - macOS
 - [VOICEPEAK](https://www.ai-j.jp/voicepeak/) installed at `/Applications/voicepeak.app/`
 - [mpv](https://mpv.io/) for audio playback (install via Homebrew: `brew install mpv`)
+- [ffmpeg](https://ffmpeg.org/) for batch mode and multi-chunk file output (install via Homebrew: `brew install ffmpeg`)
 
 ## Installation
 
@@ -91,6 +92,22 @@ vp "very long text..."
 
 # Strict mode: reject texts longer than 140 characters
 vp "text" --strict-length
+```
+
+### Playback Modes
+
+```bash
+# Batch mode: generate all chunks first, merge, then play (default)
+vp "long text" --playback-mode batch
+
+# Sequential mode: generate and play chunks one by one
+vp "long text" --playback-mode sequential
+
+# Long text file output (uses ffmpeg to merge chunks)
+vp "very long text" -o output.wav
+
+# For sequential playback without ffmpeg
+vp "long text" --playback-mode sequential
 ```
 
 ## Configuration
