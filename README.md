@@ -51,6 +51,10 @@ vp "こんにちは、世界！" --narrator "夏色花梨" -o output.wav
 
 # Read from file
 vp -t input.txt --narrator "夏色花梨"
+
+# Pipe input
+echo "こんにちは、世界！" | vp --narrator "夏色花梨"
+cat document.txt | vp -p karin-happy
 ```
 
 ### Using Presets

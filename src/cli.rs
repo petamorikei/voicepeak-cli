@@ -1,4 +1,5 @@
 use clap::{Arg, Command};
+use std::io::{self, IsTerminal, Read};
 use std::path::PathBuf;
 
 use crate::audio::{create_temp_audio_file, play_audio_and_cleanup};
@@ -13,7 +14,7 @@ pub fn build_cli() -> Command {
         .arg(
             Arg::new("text")
                 .value_name("TEXT")
-                .help("Text to say")
+                .help("Text to say (or pipe from stdin)")
                 .index(1),
         )
         .arg(
@@ -120,8 +121,13 @@ fn run_voicepeak(
         text.clone()
     } else if let Some(file_path) = matches.get_one::<String>("file") {
         std::fs::read_to_string(file_path)?
+    } else if !io::stdin().is_terminal() {
+        // Read from stdin if available (pipe input)
+        let mut buffer = String::new();
+        io::stdin().read_to_string(&mut buffer)?;
+        buffer.trim().to_string()
     } else {
-        return Err("Either text argument or --text file must be specified".into());
+        return Err("Either text argument, --text file, or pipe input must be specified".into());
     };
 
     let presets_map = get_presets_map(config);
