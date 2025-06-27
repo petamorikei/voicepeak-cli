@@ -76,10 +76,22 @@ impl VoicepeakCommand {
         self
     }
 
-    pub fn execute(mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let status = self.command.status()?;
-        if !status.success() {
-            return Err("voicepeak command failed".into());
+    pub fn execute(self) -> Result<(), Box<dyn std::error::Error>> {
+        self.execute_with_verbose(false)
+    }
+
+    pub fn execute_with_verbose(mut self, verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
+        if verbose {
+            let status = self.command.status()?;
+            if !status.success() {
+                return Err("voicepeak command failed".into());
+            }
+        } else {
+            // Suppress output by redirecting to null
+            let output = self.command.output()?;
+            if !output.status.success() {
+                return Err("voicepeak command failed".into());
+            }
         }
         Ok(())
     }

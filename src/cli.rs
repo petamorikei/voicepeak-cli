@@ -99,6 +99,13 @@ pub fn build_cli() -> Command {
                 .value_parser(["sequential", "batch"])
                 .default_value("batch"),
         )
+        .arg(
+            Arg::new("verbose")
+                .long("verbose")
+                .short('v')
+                .help("Enable verbose output (show VOICEPEAK debug messages)")
+                .action(clap::ArgAction::SetTrue),
+        )
 }
 
 pub fn handle_matches(matches: clap::ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
@@ -204,6 +211,7 @@ fn run_voicepeak(
     let output_path = matches.get_one::<String>("out").map(PathBuf::from);
     let strict_length = matches.get_flag("strict-length");
     let playback_mode = matches.get_one::<String>("playback-mode").unwrap();
+    let verbose = matches.get_flag("verbose");
 
     if strict_length && !check_text_length(&input_text) {
         return Err(format!(
@@ -255,7 +263,7 @@ fn run_voicepeak(
                     cmd = cmd.pitch(pitch);
                 }
 
-                cmd.execute()?;
+                cmd.execute_with_verbose(verbose)?;
                 play_audio_and_cleanup(&temp_path)?;
             }
         } else {
@@ -282,18 +290,21 @@ fn run_voicepeak(
                     cmd = cmd.pitch(pitch);
                 }
 
-                cmd.execute()?;
+                cmd.execute_with_verbose(verbose)?;
                 temp_files.push(temp_path);
-            }
-
-            if text_chunks.len() > 1 {
-                println!("Merging audio files...");
             }
 
             // Merge and play
             let final_temp = create_temp_audio_file()?;
             let temp_paths: Vec<&std::path::Path> = temp_files.iter().map(|p| p.as_path()).collect();
-            merge_audio_files(&temp_paths, &final_temp)?;
+            
+            if text_chunks.len() > 1 {
+                println!("Merging audio files...");
+                merge_audio_files(&temp_paths, &final_temp)?;
+                println!("Merge complete. Playing audio...");
+            } else {
+                merge_audio_files(&temp_paths, &final_temp)?;
+            }
             
             // Cleanup individual temp files
             for temp_file in temp_files {
@@ -326,17 +337,20 @@ fn run_voicepeak(
                 cmd = cmd.pitch(pitch);
             }
 
-            cmd.execute()?;
+            cmd.execute_with_verbose(verbose)?;
             temp_files.push(temp_path);
-        }
-
-        if text_chunks.len() > 1 {
-            println!("Merging audio files...");
         }
 
         // Merge to final output
         let temp_paths: Vec<&std::path::Path> = temp_files.iter().map(|p| p.as_path()).collect();
-        merge_audio_files(&temp_paths, &output_path)?;
+        
+        if text_chunks.len() > 1 {
+            println!("Merging audio files...");
+            merge_audio_files(&temp_paths, &output_path)?;
+            println!("Merge complete.");
+        } else {
+            merge_audio_files(&temp_paths, &output_path)?;
+        }
         
         // Cleanup temp files
         for temp_file in temp_files {
