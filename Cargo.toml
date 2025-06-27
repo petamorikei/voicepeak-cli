@@ -1,7 +1,16 @@
 [package]
 name = "voicepeak-cli"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+authors = ["Petamori Kei <petamorikei@gmail.com>"]
+description = "A command-line interface wrapper for VOICEPEAK text-to-speech software"
+readme = "README.md"
+homepage = "https://github.com/petamorikei/voicepeak-cli"
+repository = "https://github.com/petamorikei/voicepeak-cli"
+license = "MIT"
+keywords = ["voicepeak", "tts", "text-to-speech", "cli", "audio"]
+categories = ["command-line-utilities", "multimedia::audio"]
+exclude = ["target/*", ".github/*", "CLAUDE.md"]
 
 [[bin]]
 name = "vp"
