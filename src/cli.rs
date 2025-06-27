@@ -1,10 +1,10 @@
 use clap::{Arg, Command};
 use std::path::PathBuf;
 
-use crate::config::{Config, load_config, get_presets_map, list_presets};
-use crate::voicepeak::{list_narrator, list_emotion, VoicepeakCommand};
-use crate::audio::{play_audio_and_cleanup, create_temp_audio_file};
-use crate::text_splitter::{split_text, check_text_length, MAX_CHARS};
+use crate::audio::{create_temp_audio_file, play_audio_and_cleanup};
+use crate::config::{get_presets_map, list_presets, load_config, Config};
+use crate::text_splitter::{check_text_length, split_text, MAX_CHARS};
+use crate::voicepeak::{list_emotion, list_narrator, VoicepeakCommand};
 
 pub fn build_cli() -> Command {
     Command::new("voicepeak-cli")
@@ -112,9 +112,10 @@ pub fn handle_matches(matches: clap::ArgMatches) -> Result<(), Box<dyn std::erro
     run_voicepeak(&matches, &config)
 }
 
-fn run_voicepeak(matches: &clap::ArgMatches, config: &Config) 
-    -> Result<(), Box<dyn std::error::Error>> {
-    
+fn run_voicepeak(
+    matches: &clap::ArgMatches,
+    config: &Config,
+) -> Result<(), Box<dyn std::error::Error>> {
     let input_text = if let Some(text) = matches.get_one::<String>("text") {
         text.clone()
     } else if let Some(file_path) = matches.get_one::<String>("file") {
@@ -125,50 +126,63 @@ fn run_voicepeak(matches: &clap::ArgMatches, config: &Config)
 
     let presets_map = get_presets_map(config);
 
-    let (narrator, emotion, preset_pitch) = if let Some(preset_name) = matches.get_one::<String>("preset") {
-        // Explicit preset specified via -p option
-        let preset = presets_map.get(preset_name)
-            .ok_or_else(|| format!("Unknown preset: {}", preset_name))?;
-        (preset.narrator.clone(), preset.get_emotion_string(), preset.pitch)
-    } else if let Some(default_preset_name) = &config.default_preset {
-        // No preset specified, but default_preset exists in config
-        if let Some(default_preset) = presets_map.get(default_preset_name) {
-            // Use default preset, but allow individual overrides
-            let narrator = matches.get_one::<String>("narrator")
-                .cloned()
-                .unwrap_or_else(|| default_preset.narrator.clone());
-            let emotion = matches.get_one::<String>("emotion")
-                .cloned()
-                .unwrap_or_else(|| default_preset.get_emotion_string());
-            let preset_pitch = if matches.get_one::<String>("emotion").is_some() {
-                None // If emotion is overridden, don't use preset pitch
+    let (narrator, emotion, preset_pitch) =
+        if let Some(preset_name) = matches.get_one::<String>("preset") {
+            // Explicit preset specified via -p option
+            let preset = presets_map
+                .get(preset_name)
+                .ok_or_else(|| format!("Unknown preset: {}", preset_name))?;
+            (
+                preset.narrator.clone(),
+                preset.get_emotion_string(),
+                preset.pitch,
+            )
+        } else if let Some(default_preset_name) = &config.default_preset {
+            // No preset specified, but default_preset exists in config
+            if let Some(default_preset) = presets_map.get(default_preset_name) {
+                // Use default preset, but allow individual overrides
+                let narrator = matches
+                    .get_one::<String>("narrator")
+                    .cloned()
+                    .unwrap_or_else(|| default_preset.narrator.clone());
+                let emotion = matches
+                    .get_one::<String>("emotion")
+                    .cloned()
+                    .unwrap_or_else(|| default_preset.get_emotion_string());
+                let preset_pitch = if matches.get_one::<String>("emotion").is_some() {
+                    None // If emotion is overridden, don't use preset pitch
+                } else {
+                    default_preset.pitch
+                };
+                (narrator, emotion, preset_pitch)
             } else {
-                default_preset.pitch
-            };
-            (narrator, emotion, preset_pitch)
+                // Default preset not found, fallback to manual settings
+                let narrator = matches
+                    .get_one::<String>("narrator")
+                    .cloned()
+                    .ok_or("No narrator specified. Use --narrator option or configure a preset.")?;
+                let emotion = matches
+                    .get_one::<String>("emotion")
+                    .cloned()
+                    .unwrap_or_default();
+                (narrator, emotion, None)
+            }
         } else {
-            // Default preset not found, fallback to manual settings
-            let narrator = matches.get_one::<String>("narrator")
+            // No preset and no default_preset, use manual settings only
+            let narrator = matches
+                .get_one::<String>("narrator")
                 .cloned()
                 .ok_or("No narrator specified. Use --narrator option or configure a preset.")?;
-            let emotion = matches.get_one::<String>("emotion")
+            let emotion = matches
+                .get_one::<String>("emotion")
                 .cloned()
                 .unwrap_or_default();
             (narrator, emotion, None)
-        }
-    } else {
-        // No preset and no default_preset, use manual settings only
-        let narrator = matches.get_one::<String>("narrator")
-            .cloned()
-            .ok_or("No narrator specified. Use --narrator option or configure a preset.")?;
-        let emotion = matches.get_one::<String>("emotion")
-            .cloned()
-            .unwrap_or_default();
-        (narrator, emotion, None)
-    };
+        };
 
     let speed = matches.get_one::<String>("speed");
-    let pitch = matches.get_one::<String>("pitch")
+    let pitch = matches
+        .get_one::<String>("pitch")
         .cloned()
         .or_else(|| preset_pitch.map(|p| p.to_string()));
     let should_play = matches.get_one::<String>("out").is_none();
@@ -184,9 +198,12 @@ fn run_voicepeak(matches: &clap::ArgMatches, config: &Config)
     }
 
     let text_chunks = split_text(&input_text);
-    
+
     if text_chunks.len() > 1 {
-        println!("Text is too long, splitting into {} parts...", text_chunks.len());
+        println!(
+            "Text is too long, splitting into {} parts...",
+            text_chunks.len()
+        );
     }
 
     if should_play {
@@ -194,22 +211,22 @@ fn run_voicepeak(matches: &clap::ArgMatches, config: &Config)
             if text_chunks.len() > 1 {
                 println!("Playing part {}/{}", i + 1, text_chunks.len());
             }
-            
+
             let temp_path = create_temp_audio_file()?;
-            
+
             let mut cmd = VoicepeakCommand::new()
                 .text(chunk)
                 .narrator(&narrator)
                 .emotion(&emotion)
                 .output(&temp_path);
-            
+
             if let Some(speed) = speed {
                 cmd = cmd.speed(speed);
             }
             if let Some(pitch) = &pitch {
                 cmd = cmd.pitch(pitch);
             }
-            
+
             cmd.execute()?;
             play_audio_and_cleanup(&temp_path)?;
         }
@@ -220,17 +237,20 @@ fn run_voicepeak(matches: &clap::ArgMatches, config: &Config)
                 .narrator(&narrator)
                 .emotion(&emotion)
                 .output(&output_path);
-            
+
             if let Some(speed) = speed {
                 cmd = cmd.speed(speed);
             }
             if let Some(pitch) = &pitch {
                 cmd = cmd.pitch(pitch);
             }
-            
+
             cmd.execute()?;
         } else {
-            return Err("Cannot save multiple chunks to a single file. Use auto-play mode for long texts.".into());
+            return Err(
+                "Cannot save multiple chunks to a single file. Use auto-play mode for long texts."
+                    .into(),
+            );
         }
     }
 

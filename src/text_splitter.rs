@@ -14,10 +14,10 @@ pub fn split_text(text: &str) -> Vec<String> {
     let mut chars_count = 0;
 
     let sentences = split_into_sentences(text);
-    
+
     for sentence in sentences {
         let sentence_len = sentence.chars().count();
-        
+
         if chars_count + sentence_len <= MAX_CHARS {
             current_chunk.push_str(&sentence);
             chars_count += sentence_len;
@@ -27,7 +27,7 @@ pub fn split_text(text: &str) -> Vec<String> {
                 current_chunk = String::new();
                 chars_count = 0;
             }
-            
+
             if sentence_len <= MAX_CHARS {
                 current_chunk.push_str(&sentence);
                 chars_count = sentence_len;
@@ -44,11 +44,11 @@ pub fn split_text(text: &str) -> Vec<String> {
             }
         }
     }
-    
+
     if !current_chunk.trim().is_empty() {
         chunks.push(current_chunk.trim().to_string());
     }
-    
+
     chunks
 }
 
@@ -56,20 +56,20 @@ fn split_into_sentences(text: &str) -> Vec<String> {
     let sentence_endings = ['。', '！', '？', '.', '!', '?'];
     let mut sentences = Vec::new();
     let mut current_sentence = String::new();
-    
+
     for ch in text.chars() {
         current_sentence.push(ch);
-        
+
         if sentence_endings.contains(&ch) {
             sentences.push(current_sentence.clone());
             current_sentence.clear();
         }
     }
-    
+
     if !current_sentence.trim().is_empty() {
         sentences.push(current_sentence);
     }
-    
+
     sentences
 }
 
@@ -78,11 +78,11 @@ fn split_long_sentence(sentence: &str) -> Vec<String> {
     let mut chunks = Vec::new();
     let mut current_chunk = String::new();
     let mut chars_count = 0;
-    
+
     for ch in sentence.chars() {
         current_chunk.push(ch);
         chars_count += 1;
-        
+
         if chars_count >= MAX_CHARS {
             if break_points.contains(&ch) {
                 chunks.push(current_chunk.clone());
@@ -104,11 +104,11 @@ fn split_long_sentence(sentence: &str) -> Vec<String> {
             }
         }
     }
-    
+
     if !current_chunk.trim().is_empty() {
         chunks.push(current_chunk);
     }
-    
+
     chunks
 }
 

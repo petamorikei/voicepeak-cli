@@ -1,7 +1,7 @@
 // This module is deprecated - functionality moved to config.rs
 // Keeping for backward compatibility
 
-use crate::config::{load_config, get_presets_map};
+use crate::config::{get_presets_map, load_config};
 use std::collections::HashMap;
 
 pub use crate::config::VoicePreset;

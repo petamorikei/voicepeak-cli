@@ -20,7 +20,10 @@ impl std::fmt::Display for EnvironmentError {
                 write!(f, "VOICEPEAK is not installed. Please install VOICEPEAK from the official website.\nExpected path: {}", VOICEPEAK_PATH)
             }
             EnvironmentError::MpvNotInstalled => {
-                write!(f, "mpv is not installed. Please install mpv using Homebrew:\n  brew install mpv")
+                write!(
+                    f,
+                    "mpv is not installed. Please install mpv using Homebrew:\n  brew install mpv"
+                )
             }
         }
     }

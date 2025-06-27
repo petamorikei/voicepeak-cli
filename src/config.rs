@@ -18,8 +18,6 @@ pub struct VoicePreset {
 }
 
 impl VoicePreset {
-
-
     pub fn get_emotion_string(&self) -> String {
         if self.emotions.is_empty() {
             String::new()
@@ -42,7 +40,6 @@ impl EmotionParam {
     }
 }
 
-
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
     pub default_preset: Option<String>,
@@ -50,26 +47,25 @@ pub struct Config {
 }
 
 pub fn get_config_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let home_dir = dirs::home_dir()
-        .ok_or("Could not find home directory")?;
+    let home_dir = dirs::home_dir().ok_or("Could not find home directory")?;
     let config_dir = home_dir.join(".config").join("vp");
-    
+
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)?;
     }
-    
+
     Ok(config_dir.join("config.toml"))
 }
 
 pub fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
     let config_path = get_config_path()?;
-    
+
     if !config_path.exists() {
         let default_config = Config::default();
         save_config(&default_config)?;
         return Ok(default_config);
     }
-    
+
     let content = fs::read_to_string(&config_path)?;
     let config: Config = toml::from_str(&content)?;
     Ok(config)
@@ -83,7 +79,9 @@ pub fn save_config(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 pub fn get_presets_map(config: &Config) -> HashMap<String, VoicePreset> {
-    config.presets.iter()
+    config
+        .presets
+        .iter()
         .map(|preset| (preset.name.clone(), preset.clone()))
         .collect()
 }
@@ -101,17 +99,16 @@ pub fn list_presets(config: &Config) {
         } else {
             preset.get_emotion_string()
         };
-        let pitch_display = preset.pitch
+        let pitch_display = preset
+            .pitch
             .map(|p| format!(", pitch={}", p))
             .unwrap_or_default();
-        println!("  {} - {} ({}{}){}", 
-                 preset.name, 
-                 preset.narrator, 
-                 emotion_display,
-                 pitch_display,
-                 marker);
+        println!(
+            "  {} - {} ({}{}){}",
+            preset.name, preset.narrator, emotion_display, pitch_display, marker
+        );
     }
-    
+
     if let Some(ref default) = config.default_preset {
         println!("\nDefault preset: {}", default);
     } else {

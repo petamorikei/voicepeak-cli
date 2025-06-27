@@ -49,7 +49,6 @@ impl VoicepeakCommand {
         self
     }
 
-
     pub fn narrator(mut self, narrator: &str) -> Self {
         self.command.arg("-n").arg(narrator);
         self
