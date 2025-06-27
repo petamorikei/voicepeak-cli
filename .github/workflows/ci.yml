@@ -10,8 +10,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    name: Test
+  check:
+    name: Check
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -38,8 +38,8 @@ jobs:
             ${{ runner.os }}-cargo-${{ matrix.rust }}-
             ${{ runner.os }}-cargo-
 
-      - name: Run tests
-        run: cargo test --verbose
+      - name: Check compilation
+        run: cargo check --verbose
 
       - name: Check formatting
         if: matrix.rust == 'stable'

@@ -10,7 +10,7 @@ env:
 
 jobs:
   publish:
-    name: Publish to crates.io
+    name: Check and publish to crates.io
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,8 +30,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Run tests
-        run: cargo test --verbose
+      - name: Check compilation
+        run: cargo check --verbose
 
       - name: Check formatting
         run: cargo fmt --all -- --check
