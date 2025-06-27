@@ -11,20 +11,18 @@ pub fn build_cli() -> Command {
         .version("0.1.0")
         .about("VOICEPEAK CLI wrapper with presets and auto-play")
         .arg(
-            Arg::new("say")
-                .short('s')
-                .long("say")
+            Arg::new("text")
                 .value_name("TEXT")
                 .help("Text to say")
-                .conflicts_with("text"),
+                .index(1),
         )
         .arg(
-            Arg::new("text")
+            Arg::new("file")
                 .short('t')
                 .long("text")
                 .value_name("FILE")
                 .help("Text file to say")
-                .conflicts_with("say"),
+                .conflicts_with("text"),
         )
         .arg(
             Arg::new("out")
@@ -117,12 +115,12 @@ pub fn handle_matches(matches: clap::ArgMatches) -> Result<(), Box<dyn std::erro
 fn run_voicepeak(matches: &clap::ArgMatches, config: &Config) 
     -> Result<(), Box<dyn std::error::Error>> {
     
-    let input_text = if let Some(text) = matches.get_one::<String>("say") {
+    let input_text = if let Some(text) = matches.get_one::<String>("text") {
         text.clone()
-    } else if let Some(file_path) = matches.get_one::<String>("text") {
+    } else if let Some(file_path) = matches.get_one::<String>("file") {
         std::fs::read_to_string(file_path)?
     } else {
-        return Err("Either --say or --text must be specified".into());
+        return Err("Either text argument or --text file must be specified".into());
     };
 
     let presets_map = get_presets_map(config);
