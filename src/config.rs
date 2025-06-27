@@ -18,19 +18,7 @@ pub struct VoicePreset {
 }
 
 impl VoicePreset {
-    pub fn new(name: &str, narrator: &str, emotions: Vec<EmotionParam>) -> Self {
-        Self {
-            name: name.to_string(),
-            narrator: narrator.to_string(),
-            emotions,
-            pitch: None,
-        }
-    }
 
-    pub fn new_from_emotion_string(name: &str, narrator: &str, emotion: &str) -> Self {
-        let emotions = parse_emotion_string(emotion);
-        Self::new(name, narrator, emotions)
-    }
 
     pub fn get_emotion_string(&self) -> String {
         if self.emotions.is_empty() {
@@ -54,41 +42,11 @@ impl EmotionParam {
     }
 }
 
-fn parse_emotion_string(emotion: &str) -> Vec<EmotionParam> {
-    if emotion.trim().is_empty() {
-        return Vec::new();
-    }
 
-    emotion
-        .split(',')
-        .filter_map(|part| {
-            let part = part.trim();
-            if let Some((name, value_str)) = part.split_once('=') {
-                if let Ok(value) = value_str.parse::<i32>() {
-                    Some(EmotionParam::new(name.trim(), value))
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        })
-        .collect()
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
     pub default_preset: Option<String>,
     pub presets: Vec<VoicePreset>,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            default_preset: None,
-            presets: vec![],
-        }
-    }
 }
 
 pub fn get_config_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
