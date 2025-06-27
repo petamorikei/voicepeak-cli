@@ -85,39 +85,8 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            default_preset: Some("karin-normal".to_string()),
-            presets: vec![
-                VoicePreset {
-                    name: "karin-normal".to_string(),
-                    narrator: "夏色花梨".to_string(),
-                    emotions: vec![],
-                    pitch: None,
-                },
-                VoicePreset {
-                    name: "karin-happy".to_string(),
-                    narrator: "夏色花梨".to_string(),
-                    emotions: vec![EmotionParam::new("hightension", 50)],
-                    pitch: Some(50),
-                },
-                VoicePreset {
-                    name: "karin-angry".to_string(),
-                    narrator: "夏色花梨".to_string(),
-                    emotions: vec![EmotionParam::new("buchigire", 50)],
-                    pitch: Some(-50),
-                },
-                VoicePreset {
-                    name: "karin-sad".to_string(),
-                    narrator: "夏色花梨".to_string(),
-                    emotions: vec![EmotionParam::new("nageki", 50)],
-                    pitch: Some(-30),
-                },
-                VoicePreset {
-                    name: "karin-whisper".to_string(),
-                    narrator: "夏色花梨".to_string(),
-                    emotions: vec![EmotionParam::new("sasayaki", 50)],
-                    pitch: Some(-20),
-                },
-            ],
+            default_preset: None,
+            presets: vec![],
         }
     }
 }

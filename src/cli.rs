@@ -152,7 +152,7 @@ fn run_voicepeak(matches: &clap::ArgMatches, config: &Config)
             // Default preset not found, fallback to manual settings
             let narrator = matches.get_one::<String>("narrator")
                 .cloned()
-                .unwrap_or_else(|| "夏色花梨".to_string());
+                .ok_or("No narrator specified. Use --narrator option or configure a preset.")?;
             let emotion = matches.get_one::<String>("emotion")
                 .cloned()
                 .unwrap_or_default();
@@ -162,7 +162,7 @@ fn run_voicepeak(matches: &clap::ArgMatches, config: &Config)
         // No preset and no default_preset, use manual settings only
         let narrator = matches.get_one::<String>("narrator")
             .cloned()
-            .unwrap_or_else(|| "夏色花梨".to_string());
+            .ok_or("No narrator specified. Use --narrator option or configure a preset.")?;
         let emotion = matches.get_one::<String>("emotion")
             .cloned()
             .unwrap_or_default();
