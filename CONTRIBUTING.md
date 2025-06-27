@@ -45,9 +45,30 @@ cargo install --path .
 ## Code Style
 
 - Follow Rust standard formatting (`cargo fmt`)
-- Ensure all clippy lints pass (`cargo clippy`)
+- Ensure all clippy lints pass with CI-level strictness
 - Write tests for new functionality
 - Update documentation as needed
+
+### Running CI-equivalent checks locally
+
+To ensure your code passes CI, run the same checks locally:
+
+```bash
+# Check compilation (same as CI)
+cargo check
+
+# Format check (same as CI)
+cargo fmt --all -- --check
+
+# Clippy check (same as CI)
+cargo clippy
+
+# Fix formatting issues
+cargo fmt
+
+# Fix clippy issues where possible
+cargo clippy --fix
+```
 
 ## Commit Message Guidelines
 
