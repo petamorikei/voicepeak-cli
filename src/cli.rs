@@ -1,8 +1,7 @@
 use clap::{Arg, Command};
-use std::collections::HashMap;
 use std::path::PathBuf;
 
-use crate::presets::{VoicePreset, get_default_presets, list_presets};
+use crate::config::{Config, load_config, get_presets_map, list_presets};
 use crate::voicepeak::{list_narrator, list_emotion, VoicepeakCommand};
 use crate::audio::{play_audio_and_cleanup, create_temp_audio_file};
 use crate::text_splitter::{split_text, check_text_length, MAX_CHARS};
@@ -95,7 +94,7 @@ pub fn build_cli() -> Command {
 }
 
 pub fn handle_matches(matches: clap::ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
-    let presets = get_default_presets();
+    let config = load_config()?;
 
     if matches.get_flag("list-narrator") {
         list_narrator();
@@ -108,14 +107,14 @@ pub fn handle_matches(matches: clap::ArgMatches) -> Result<(), Box<dyn std::erro
     }
 
     if matches.get_flag("list-presets") {
-        list_presets(&presets);
+        list_presets(&config);
         return Ok(());
     }
 
-    run_voicepeak(&matches, &presets)
+    run_voicepeak(&matches, &config)
 }
 
-fn run_voicepeak(matches: &clap::ArgMatches, presets: &HashMap<String, VoicePreset>) 
+fn run_voicepeak(matches: &clap::ArgMatches, config: &Config) 
     -> Result<(), Box<dyn std::error::Error>> {
     
     let input_text = if let Some(text) = matches.get_one::<String>("say") {
@@ -126,22 +125,54 @@ fn run_voicepeak(matches: &clap::ArgMatches, presets: &HashMap<String, VoicePres
         return Err("Either --say or --text must be specified".into());
     };
 
-    let (narrator, emotion) = if let Some(preset_name) = matches.get_one::<String>("preset") {
-        let preset = presets.get(preset_name)
+    let presets_map = get_presets_map(config);
+
+    let (narrator, emotion, preset_pitch) = if let Some(preset_name) = matches.get_one::<String>("preset") {
+        // Explicit preset specified via -p option
+        let preset = presets_map.get(preset_name)
             .ok_or_else(|| format!("Unknown preset: {}", preset_name))?;
-        (preset.narrator.clone(), preset.emotion.clone())
+        (preset.narrator.clone(), preset.get_emotion_string(), preset.pitch)
+    } else if let Some(default_preset_name) = &config.default_preset {
+        // No preset specified, but default_preset exists in config
+        if let Some(default_preset) = presets_map.get(default_preset_name) {
+            // Use default preset, but allow individual overrides
+            let narrator = matches.get_one::<String>("narrator")
+                .cloned()
+                .unwrap_or_else(|| default_preset.narrator.clone());
+            let emotion = matches.get_one::<String>("emotion")
+                .cloned()
+                .unwrap_or_else(|| default_preset.get_emotion_string());
+            let preset_pitch = if matches.get_one::<String>("emotion").is_some() {
+                None // If emotion is overridden, don't use preset pitch
+            } else {
+                default_preset.pitch
+            };
+            (narrator, emotion, preset_pitch)
+        } else {
+            // Default preset not found, fallback to manual settings
+            let narrator = matches.get_one::<String>("narrator")
+                .cloned()
+                .unwrap_or_else(|| "夏色花梨".to_string());
+            let emotion = matches.get_one::<String>("emotion")
+                .cloned()
+                .unwrap_or_default();
+            (narrator, emotion, None)
+        }
     } else {
+        // No preset and no default_preset, use manual settings only
         let narrator = matches.get_one::<String>("narrator")
             .cloned()
             .unwrap_or_else(|| "夏色花梨".to_string());
         let emotion = matches.get_one::<String>("emotion")
             .cloned()
             .unwrap_or_default();
-        (narrator, emotion)
+        (narrator, emotion, None)
     };
 
     let speed = matches.get_one::<String>("speed");
-    let pitch = matches.get_one::<String>("pitch");
+    let pitch = matches.get_one::<String>("pitch")
+        .cloned()
+        .or_else(|| preset_pitch.map(|p| p.to_string()));
     let should_play = matches.get_one::<String>("out").is_none();
     let output_path = matches.get_one::<String>("out").map(PathBuf::from);
     let strict_length = matches.get_flag("strict-length");
@@ -177,7 +208,7 @@ fn run_voicepeak(matches: &clap::ArgMatches, presets: &HashMap<String, VoicePres
             if let Some(speed) = speed {
                 cmd = cmd.speed(speed);
             }
-            if let Some(pitch) = pitch {
+            if let Some(pitch) = &pitch {
                 cmd = cmd.pitch(pitch);
             }
             
@@ -195,7 +226,7 @@ fn run_voicepeak(matches: &clap::ArgMatches, presets: &HashMap<String, VoicePres
             if let Some(speed) = speed {
                 cmd = cmd.speed(speed);
             }
-            if let Some(pitch) = pitch {
+            if let Some(pitch) = &pitch {
                 cmd = cmd.pitch(pitch);
             }
             

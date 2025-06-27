@@ -40,12 +40,14 @@ The project is structured as both a library and binary crate using Rust 2018 mod
 - `src/cli.rs` - CLI argument parsing and command handling
 - `src/env_check.rs` - Environment validation (macOS, VOICEPEAK, mpv)
 - `src/text_splitter.rs` - Text splitting for 140-character limit handling
-- `Cargo.toml` - Project configuration with dependencies: clap, tempfile, serde, serde_json
+- `src/config.rs` - Configuration file management for presets
+- `Cargo.toml` - Project configuration with dependencies: clap, tempfile, serde, serde_json, toml, dirs
 
 Key components:
 - `VoicePreset` struct combines narrator and emotion settings
 - `VoicepeakCommand` provides a builder pattern for VOICEPEAK execution
-- Default presets for "夏色花梨" with various emotions (normal, happy, angry, sad, whisper)
+- Configurable presets loaded from `~/.config/vp/config.toml`
+- Default preset support with fallback behavior
 - Automatic temporary file creation and cleanup for audio playback
 - Integration with system mpv for audio playback
 - Environment validation ensures macOS with VOICEPEAK and mpv installed
@@ -62,19 +64,43 @@ The application performs environment checks on startup and will display helpful 
 
 This structure allows the functionality to be used both as a CLI application and as a library in other Rust projects.
 
+## Configuration
+
+The application uses `~/.config/vp/config.toml` for preset configuration:
+
+```toml
+default_preset = "karin-normal"
+
+[[presets]]
+name = "karin-normal"
+narrator = "夏色花梨"
+emotion = ""
+
+[[presets]]
+name = "karin-happy"
+narrator = "夏色花梨"
+emotion = "hightension=50"
+```
+
+- `default_preset`: Optional default preset name (can be `null` or omitted)
+- `presets`: Array of available voice presets
+
 ## Usage Examples
 
 ```bash
-# Basic text-to-speech with auto-play
+# Basic text-to-speech with auto-play (uses default preset if configured)
 ./target/debug/vp -s "Hello world"
 
-# Use preset with emotion
+# Use specific preset
 ./target/debug/vp -s "こんにちは" -p karin-happy
+
+# Override individual parameters
+./target/debug/vp -s "こんにちは" -n "夏色花梨" -e "happy=30"
 
 # Save to file (no auto-play)
 ./target/debug/vp -s "Hello" -o output.wav
 
-# List available presets
+# List available presets (shows default)
 ./target/debug/vp --list-presets
 
 # Long text with automatic splitting (default behavior)

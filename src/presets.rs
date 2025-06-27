@@ -1,39 +1,28 @@
-use serde::{Deserialize, Serialize};
+// This module is deprecated - functionality moved to config.rs
+// Keeping for backward compatibility
+
+use crate::config::{load_config, get_presets_map};
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct VoicePreset {
-    pub name: String,
-    pub narrator: String,
-    pub emotion: String,
-}
+pub use crate::config::VoicePreset;
 
-impl VoicePreset {
-    pub fn new(name: &str, narrator: &str, emotion: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            narrator: narrator.to_string(),
-            emotion: emotion.to_string(),
-        }
+#[deprecated(note = "Use load_config() instead")]
+pub fn get_default_presets() -> HashMap<String, VoicePreset> {
+    match load_config() {
+        Ok(config) => get_presets_map(&config),
+        Err(_) => HashMap::new(),
     }
 }
 
-pub fn get_default_presets() -> HashMap<String, VoicePreset> {
-    let mut presets = HashMap::new();
-    
-    presets.insert("karin-normal".to_string(), VoicePreset::new("karin-normal", "夏色花梨", ""));
-    presets.insert("karin-happy".to_string(), VoicePreset::new("karin-happy", "夏色花梨", "hightension=50"));
-    presets.insert("karin-angry".to_string(), VoicePreset::new("karin-angry", "夏色花梨", "buchigire=50"));
-    presets.insert("karin-sad".to_string(), VoicePreset::new("karin-sad", "夏色花梨", "nageki=50"));
-    presets.insert("karin-whisper".to_string(), VoicePreset::new("karin-whisper", "夏色花梨", "sasayaki=50"));
-    
-    presets
-}
-
+#[deprecated(note = "Use config::list_presets() instead")]
 pub fn list_presets(presets: &HashMap<String, VoicePreset>) {
     println!("Available presets:");
     for (name, preset) in presets {
-        println!("  {} - {} ({})", name, preset.narrator, 
-                 if preset.emotion.is_empty() { "normal" } else { &preset.emotion });
+        let emotion_display = if preset.emotions.is_empty() {
+            "normal".to_string()
+        } else {
+            preset.get_emotion_string()
+        };
+        println!("  {} - {} ({})", name, preset.narrator, emotion_display);
     }
 }
