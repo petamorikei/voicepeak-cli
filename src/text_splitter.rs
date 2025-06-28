@@ -90,12 +90,13 @@ fn split_long_sentence(sentence: &str) -> Vec<String> {
                 chars_count = 0;
             } else {
                 let last_break = find_last_break_point(&current_chunk, &break_points);
-                if let Some(pos) = last_break {
-                    let temp_chunk = current_chunk.clone();
-                    let (first_part, second_part) = temp_chunk.split_at(pos + 1);
-                    chunks.push(first_part.to_string());
-                    current_chunk = second_part.to_string();
-                    chars_count = second_part.chars().count();
+                if let Some(char_pos) = last_break {
+                    let chars: Vec<char> = current_chunk.chars().collect();
+                    let first_part: String = chars[..=char_pos].iter().collect();
+                    let second_part: String = chars[char_pos + 1..].iter().collect();
+                    chunks.push(first_part);
+                    current_chunk = second_part;
+                    chars_count = current_chunk.chars().count();
                 } else {
                     chunks.push(current_chunk.clone());
                     current_chunk.clear();
@@ -113,7 +114,10 @@ fn split_long_sentence(sentence: &str) -> Vec<String> {
 }
 
 fn find_last_break_point(text: &str, break_points: &[char]) -> Option<usize> {
-    text.char_indices()
+    let chars: Vec<char> = text.chars().collect();
+    chars
+        .iter()
+        .enumerate()
         .rev()
         .find(|(_, ch)| break_points.contains(ch))
         .map(|(i, _)| i)
