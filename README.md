@@ -4,14 +4,25 @@
 
 A command-line interface wrapper for VOICEPEAK text-to-speech software with preset management and automatic audio playback.
 
-## Features
+## What's Different from the Original VOICEPEAK Command?
 
-- **Simple command-line interface**: `vp "読み上げるテキスト"`
-- **Voice presets**: Configure and reuse voice settings with emotions and pitch
-- **Automatic text splitting**: Handles texts longer than 140 characters by splitting at natural break points
-- **Auto-play**: Automatically plays generated audio with mpv (when no output file specified)
-- **File input support**: Read text from files with `-t` option
-- **Comprehensive voice control**: Narrator, emotions, speed, and pitch settings
+This wrapper enhances the original VOICEPEAK CLI with several powerful features:
+
+- 🎵 **Auto-play with mpv** - Automatically plays generated audio when no output file is specified
+- 📝 **Voice presets** - Save and reuse combinations of narrator, emotions, and pitch settings
+- 📜 **Long text support** - Automatically splits texts longer than 140 characters and merges audio chunks
+- 🔧 **Advanced playback modes** - Choose between batch (generate all → merge → play) or sequential (generate → play one by one)
+- 🔄 **Pipe input support** - Accept text from stdin: `echo "text" | vp`
+- 🔇 **Clean output** - Suppresses technical output by default (use `--verbose` to see debug info)
+- ⚙️ **Configuration file** - Store your preferred settings in `~/.config/vp/config.toml`
+
+## Key Benefits
+
+- **Enhanced Workflow**: No need to manually save and play audio files - just run and listen
+- **Batch Processing**: Handle long documents without worrying about character limits  
+- **Flexible Input**: Works with direct text, files, or piped input from other commands
+- **Personalization**: Save your favorite voice configurations for consistent results
+- **Professional Output**: Clean interface with optional verbose mode for debugging
 
 ## Requirements
 
