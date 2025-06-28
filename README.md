@@ -168,7 +168,7 @@ emotions = [{ name = "hightension", value = 50 }]
 Usage: vp [OPTIONS] [TEXT]
 
 Arguments:
-  [TEXT]  Text to say
+  [TEXT]  Text to say (or pipe from stdin)
 
 Options:
   -t, --text <FILE>              Text file to say
@@ -182,6 +182,8 @@ Options:
       --speed <VALUE>            Speed (50 - 200)
       --pitch <VALUE>            Pitch (-300 - 300)
       --strict-length            Reject input longer than 140 characters (default: false, allows splitting)
+      --playback-mode <MODE>     Playback mode: sequential or batch (default: batch)
+  -v, --verbose                  Enable verbose output (show VOICEPEAK debug messages)
   -h, --help                     Print help
   -V, --version                  Print version
 ```

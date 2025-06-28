@@ -168,7 +168,7 @@ emotions = [{ name = "hightension", value = 50 }]
 使用方法: vp [OPTIONS] [TEXT]
 
 引数:
-  [TEXT]  読み上げるテキスト
+  [TEXT]  読み上げるテキスト（またはstdinからのパイプ）
 
 オプション:
   -t, --text <FILE>              読み上げるテキストファイル
@@ -182,6 +182,8 @@ emotions = [{ name = "hightension", value = 50 }]
       --speed <VALUE>            速度（50〜200）
       --pitch <VALUE>            ピッチ（-300〜300）
       --strict-length            140文字を超える入力を拒否（デフォルト: false、分割を許可）
+      --playback-mode <MODE>     再生モード: sequential または batch（デフォルト: batch）
+  -v, --verbose                  詳細出力を有効化（VOICEPEAKデバッグメッセージを表示）
   -h, --help                     ヘルプを表示
   -V, --version                  バージョンを表示
 ```
