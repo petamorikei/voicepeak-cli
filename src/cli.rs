@@ -10,7 +10,7 @@ use crate::voicepeak::{list_emotion, list_narrator, VoicepeakCommand};
 
 pub fn build_cli() -> Command {
     Command::new("voicepeak-cli")
-        .version("0.4.0")
+        .version("0.4.1")
         .about("VOICEPEAK CLI wrapper with presets and auto-play")
         .arg(
             Arg::new("text")
@@ -231,11 +231,14 @@ fn run_voicepeak(
     }
 
     // Check ffmpeg availability for batch mode
-    if (playback_mode == "batch" || (!should_play && text_chunks.len() > 1)) && !check_ffmpeg_available() {
+    if (playback_mode == "batch" || (!should_play && text_chunks.len() > 1))
+        && !check_ffmpeg_available()
+    {
         return Err(
             "ffmpeg is required for batch mode and multi-chunk file output.\n\
             Please install ffmpeg or use --playback-mode sequential for auto-play mode.\n\
-            Install ffmpeg: https://ffmpeg.org/download.html".into()
+            Install ffmpeg: https://ffmpeg.org/download.html"
+                .into(),
         );
     }
 
@@ -269,7 +272,7 @@ fn run_voicepeak(
         } else {
             // Batch mode: generate all, merge, then play
             let mut temp_files = Vec::new();
-            
+
             for (i, chunk) in text_chunks.iter().enumerate() {
                 if text_chunks.len() > 1 {
                     println!("Generating part {}/{}", i + 1, text_chunks.len());
@@ -296,8 +299,9 @@ fn run_voicepeak(
 
             // Merge and play
             let final_temp = create_temp_audio_file()?;
-            let temp_paths: Vec<&std::path::Path> = temp_files.iter().map(|p| p.as_path()).collect();
-            
+            let temp_paths: Vec<&std::path::Path> =
+                temp_files.iter().map(|p| p.as_path()).collect();
+
             if text_chunks.len() > 1 {
                 println!("Merging audio files...");
                 merge_audio_files(&temp_paths, &final_temp)?;
@@ -305,7 +309,7 @@ fn run_voicepeak(
             } else {
                 merge_audio_files(&temp_paths, &final_temp)?;
             }
-            
+
             // Cleanup individual temp files
             for temp_file in temp_files {
                 let _ = std::fs::remove_file(temp_file);
@@ -316,7 +320,7 @@ fn run_voicepeak(
     } else if let Some(output_path) = output_path {
         // File output mode
         let mut temp_files = Vec::new();
-        
+
         for (i, chunk) in text_chunks.iter().enumerate() {
             if text_chunks.len() > 1 {
                 println!("Generating part {}/{}", i + 1, text_chunks.len());
@@ -343,7 +347,7 @@ fn run_voicepeak(
 
         // Merge to final output
         let temp_paths: Vec<&std::path::Path> = temp_files.iter().map(|p| p.as_path()).collect();
-        
+
         if text_chunks.len() > 1 {
             println!("Merging audio files...");
             merge_audio_files(&temp_paths, &output_path)?;
@@ -351,7 +355,7 @@ fn run_voicepeak(
         } else {
             merge_audio_files(&temp_paths, &output_path)?;
         }
-        
+
         // Cleanup temp files
         for temp_file in temp_files {
             let _ = std::fs::remove_file(temp_file);
