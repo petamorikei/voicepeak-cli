@@ -74,12 +74,14 @@ default_preset = "karin-normal"
 [[presets]]
 name = "karin-normal"
 narrator = "夏色花梨"
-emotion = ""
+emotions = []
 
 [[presets]]
 name = "karin-happy"
 narrator = "夏色花梨"
-emotion = "hightension=50"
+emotions = [{ name = "hightension", value = 50 }]
+pitch = 30
+speed = 120
 ```
 
 - `default_preset`: Optional default preset name (can be `null` or omitted)

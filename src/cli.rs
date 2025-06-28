@@ -148,7 +148,7 @@ fn run_voicepeak(
 
     let presets_map = get_presets_map(config);
 
-    let (narrator, emotion, preset_pitch) =
+    let (narrator, emotion, preset_pitch, preset_speed) =
         if let Some(preset_name) = matches.get_one::<String>("preset") {
             // Explicit preset specified via -p option
             let preset = presets_map
@@ -158,6 +158,7 @@ fn run_voicepeak(
                 preset.narrator.clone(),
                 preset.get_emotion_string(),
                 preset.pitch,
+                preset.speed,
             )
         } else if let Some(default_preset_name) = &config.default_preset {
             // No preset specified, but default_preset exists in config
@@ -176,7 +177,8 @@ fn run_voicepeak(
                 } else {
                     default_preset.pitch
                 };
-                (narrator, emotion, preset_pitch)
+                let preset_speed = default_preset.speed;
+                (narrator, emotion, preset_pitch, preset_speed)
             } else {
                 // Default preset not found, fallback to manual settings
                 let narrator = matches
@@ -187,7 +189,7 @@ fn run_voicepeak(
                     .get_one::<String>("emotion")
                     .cloned()
                     .unwrap_or_default();
-                (narrator, emotion, None)
+                (narrator, emotion, None, None)
             }
         } else {
             // No preset and no default_preset, use manual settings only
@@ -199,10 +201,13 @@ fn run_voicepeak(
                 .get_one::<String>("emotion")
                 .cloned()
                 .unwrap_or_default();
-            (narrator, emotion, None)
+            (narrator, emotion, None, None)
         };
 
-    let speed = matches.get_one::<String>("speed");
+    let speed = matches
+        .get_one::<String>("speed")
+        .cloned()
+        .or_else(|| preset_speed.map(|s| s.to_string()));
     let pitch = matches
         .get_one::<String>("pitch")
         .cloned()
@@ -259,8 +264,8 @@ fn run_voicepeak(
                     .emotion(&emotion)
                     .output(&temp_path);
 
-                if let Some(speed) = speed {
-                    cmd = cmd.speed(speed);
+                if let Some(speed) = &speed {
+                    cmd = cmd.speed(&speed);
                 }
                 if let Some(pitch) = &pitch {
                     cmd = cmd.pitch(pitch);
@@ -286,8 +291,8 @@ fn run_voicepeak(
                     .emotion(&emotion)
                     .output(&temp_path);
 
-                if let Some(speed) = speed {
-                    cmd = cmd.speed(speed);
+                if let Some(speed) = &speed {
+                    cmd = cmd.speed(&speed);
                 }
                 if let Some(pitch) = &pitch {
                     cmd = cmd.pitch(pitch);
@@ -334,8 +339,8 @@ fn run_voicepeak(
                 .emotion(&emotion)
                 .output(&temp_path);
 
-            if let Some(speed) = speed {
-                cmd = cmd.speed(speed);
+            if let Some(speed) = &speed {
+                cmd = cmd.speed(&speed);
             }
             if let Some(pitch) = &pitch {
                 cmd = cmd.pitch(pitch);

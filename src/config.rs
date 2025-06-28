@@ -15,6 +15,7 @@ pub struct VoicePreset {
     pub narrator: String,
     pub emotions: Vec<EmotionParam>,
     pub pitch: Option<i32>,
+    pub speed: Option<i32>,
 }
 
 impl VoicePreset {
@@ -103,9 +104,13 @@ pub fn list_presets(config: &Config) {
             .pitch
             .map(|p| format!(", pitch={}", p))
             .unwrap_or_default();
+        let speed_display = preset
+            .speed
+            .map(|s| format!(", speed={}", s))
+            .unwrap_or_default();
         println!(
-            "  {} - {} ({}{}){}",
-            preset.name, preset.narrator, emotion_display, pitch_display, marker
+            "  {} - {} ({}{}{}){}",
+            preset.name, preset.narrator, emotion_display, pitch_display, speed_display, marker
         );
     }
 

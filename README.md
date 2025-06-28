@@ -138,6 +138,7 @@ emotions = [
     { name = "sasayaki", value = 20 },
 ]
 pitch = 30
+speed = 120
 
 [[presets]]
 name = "karin-normal"
@@ -161,6 +162,7 @@ emotions = [{ name = "hightension", value = 50 }]
 - `narrator`: Voice narrator name
 - `emotions`: Array of emotion parameters with `name` and `value`
 - `pitch`: Optional pitch adjustment (-300 to 300)
+- `speed`: Optional speed adjustment (50 to 200)
 
 ## Command-Line Options
 
