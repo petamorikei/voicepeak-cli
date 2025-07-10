@@ -47,7 +47,7 @@ The project is structured as both a library and binary crate using Rust 2018 mod
 
 Key components:
 - `VoicePreset` struct combines narrator and emotion settings
-- `VoicepeakCommand` provides a builder pattern for VOICEPEAK execution
+- `VoicepeakCommand` provides a builder pattern for VOICEPEAK execution with automatic retry (3 attempts with 1-second wait)
 - Configurable presets loaded from `~/.config/vp/config.toml`
 - Default preset support with fallback behavior
 - Automatic temporary file creation and cleanup for audio playback
