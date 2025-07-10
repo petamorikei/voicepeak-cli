@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Rust CLI application called `voicepeak-cli` that serves as a wrapper for the VOICEPEAK text-to-speech software. Current version: v0.5.0
+This is a Rust CLI application called `voicepeak-cli` that serves as a wrapper for the VOICEPEAK text-to-speech software. Current version: v0.6.0
 
 It provides enhanced functionality including:
 
@@ -47,7 +47,7 @@ The project is structured as both a library and binary crate using Rust 2018 mod
 
 Key components:
 - `VoicePreset` struct combines narrator and emotion settings
-- `VoicepeakCommand` provides a builder pattern for VOICEPEAK execution with automatic retry (3 attempts with 1-second wait)
+- `VoicepeakCommand` provides a builder pattern for VOICEPEAK execution with automatic retry (10 attempts with 5-second wait) and 15-second timeout
 - Configurable presets loaded from `~/.config/vp/config.toml`
 - Default preset support with fallback behavior
 - Automatic temporary file creation and cleanup for audio playback

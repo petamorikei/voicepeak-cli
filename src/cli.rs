@@ -10,7 +10,7 @@ use crate::voicepeak::{list_emotion, list_narrator, VoicepeakCommand};
 
 pub fn build_cli() -> Command {
     Command::new("voicepeak-cli")
-        .version("0.5.0")
+        .version("0.6.0")
         .about("VOICEPEAK CLI wrapper with presets and auto-play")
         .arg(
             Arg::new("text")
