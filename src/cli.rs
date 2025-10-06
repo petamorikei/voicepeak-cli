@@ -52,7 +52,7 @@ pub fn build_cli() -> Command {
                 .short('p')
                 .long("preset")
                 .value_name("NAME")
-                .help("Use voice preset (karin-normal, karin-happy, karin-angry, karin-sad, karin-whisper)")
+                .help("Use voice preset (use --list-presets to see available presets)")
                 .conflicts_with_all(["narrator", "emotion"]),
         )
         .arg(
