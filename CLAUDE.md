@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Rust CLI application called `voicepeak-cli` that serves as a wrapper for the VOICEPEAK text-to-speech software. Current version: v0.6.0
+This is a Rust CLI application called `voicepeak-cli` that serves as a wrapper for the VOICEPEAK text-to-speech software. Current version: v0.6.1
 
 It provides enhanced functionality including:
 
