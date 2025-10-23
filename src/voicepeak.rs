@@ -1,9 +1,36 @@
+use fs2::FileExt;
+use std::fs::{create_dir_all, File, OpenOptions};
+use std::path::PathBuf;
 use std::process::{Command as ProcessCommand, Output, Stdio};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
 const VOICEPEAK_PATH: &str = "/Applications/voicepeak.app/Contents/MacOS/voicepeak";
+
+fn get_lock_file() -> Result<File, Box<dyn std::error::Error>> {
+    let lock_path = get_lock_file_path()?;
+
+    // Ensure parent directory exists
+    if let Some(parent) = lock_path.parent() {
+        create_dir_all(parent)?;
+    }
+
+    // Open or create lock file
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(&lock_path)?;
+
+    Ok(file)
+}
+
+fn get_lock_file_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let config_dir = dirs::config_dir()
+        .ok_or("Could not determine config directory")?;
+    Ok(config_dir.join("vp").join("vp.lock"))
+}
 
 pub fn list_narrator() {
     let output = ProcessCommand::new(VOICEPEAK_PATH)
@@ -189,6 +216,11 @@ impl VoicepeakCommand {
         verbose: bool,
         max_retries: usize,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        // Acquire exclusive lock to prevent concurrent VOICEPEAK execution
+        let lock_file = get_lock_file()?;
+        lock_file.lock_exclusive()?;
+        // Lock will be automatically released when lock_file is dropped
+
         let mut last_error: Option<Box<dyn std::error::Error>> = None;
 
         for attempt in 1..=max_retries {
