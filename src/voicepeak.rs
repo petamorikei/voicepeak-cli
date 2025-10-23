@@ -21,14 +21,14 @@ fn get_lock_file() -> Result<File, Box<dyn std::error::Error>> {
         .read(true)
         .write(true)
         .create(true)
+        .truncate(true)
         .open(&lock_path)?;
 
     Ok(file)
 }
 
 fn get_lock_file_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let config_dir = dirs::config_dir()
-        .ok_or("Could not determine config directory")?;
+    let config_dir = dirs::config_dir().ok_or("Could not determine config directory")?;
     Ok(config_dir.join("vp").join("vp.lock"))
 }
 
@@ -244,7 +244,7 @@ impl VoicepeakCommand {
                         Err("voicepeak command failed".into())
                     }
                 }
-                Err(e) => Err(e.into()),
+                Err(e) => Err(e),
             };
 
             match result {

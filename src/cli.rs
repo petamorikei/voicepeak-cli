@@ -10,7 +10,7 @@ use crate::voicepeak::{list_emotion, list_narrator, VoicepeakCommand};
 
 pub fn build_cli() -> Command {
     Command::new("voicepeak-cli")
-        .version("0.6.1")
+        .version("0.7.0")
         .about("VOICEPEAK CLI wrapper with presets and auto-play")
         .arg(
             Arg::new("text")
@@ -265,7 +265,7 @@ fn run_voicepeak(
                     .output(&temp_path);
 
                 if let Some(speed) = &speed {
-                    cmd = cmd.speed(&speed);
+                    cmd = cmd.speed(speed);
                 }
                 if let Some(pitch) = &pitch {
                     cmd = cmd.pitch(pitch);
@@ -292,7 +292,7 @@ fn run_voicepeak(
                     .output(&temp_path);
 
                 if let Some(speed) = &speed {
-                    cmd = cmd.speed(&speed);
+                    cmd = cmd.speed(speed);
                 }
                 if let Some(pitch) = &pitch {
                     cmd = cmd.pitch(pitch);
@@ -340,7 +340,7 @@ fn run_voicepeak(
                 .output(&temp_path);
 
             if let Some(speed) = &speed {
-                cmd = cmd.speed(&speed);
+                cmd = cmd.speed(speed);
             }
             if let Some(pitch) = &pitch {
                 cmd = cmd.pitch(pitch);
