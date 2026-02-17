@@ -253,9 +253,8 @@ fn run_voicepeak(
         );
     }
 
-    let bg = matches.get_flag("bg");
-
-    if bg {
+    #[cfg(unix)]
+    if matches.get_flag("bg") {
         unsafe {
             let pid = libc::fork();
             match pid {
@@ -263,10 +262,7 @@ fn run_voicepeak(
                 0 => {
                     // Child: detach session and suppress output
                     libc::setsid();
-                    let devnull = libc::open(
-                        c"/dev/null".as_ptr(),
-                        libc::O_RDWR,
-                    );
+                    let devnull = libc::open(c"/dev/null".as_ptr(), libc::O_RDWR);
                     if devnull >= 0 {
                         libc::dup2(devnull, libc::STDOUT_FILENO);
                         libc::dup2(devnull, libc::STDERR_FILENO);
@@ -280,6 +276,11 @@ fn run_voicepeak(
                 }
             }
         }
+    }
+
+    #[cfg(not(unix))]
+    if matches.get_flag("bg") {
+        return Err("--bg flag is only supported on Unix systems".into());
     }
 
     if should_play {
