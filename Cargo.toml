@@ -1,6 +1,6 @@
 [package]
 name = "voicepeak-cli"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2021"
 authors = ["Petamori Kei <petamorikei@gmail.com>"]
 description = "A command-line interface wrapper for VOICEPEAK text-to-speech software"

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-02-17
+
+### Added
+- `--bg` flag for background execution using fork() + setsid()
+- Shell returns control immediately while audio generates and plays in the background
+- All existing flags and options work with `--bg`
+- stdout/stderr suppressed in background mode
+
+### Changed
+- Added `libc` dependency for process forking
+
 ## [0.7.0] - 2025-10-23
 
 ### Added
