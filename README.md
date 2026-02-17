@@ -13,6 +13,7 @@ This wrapper enhances the original VOICEPEAK CLI with several powerful features:
 - 📜 **Long text support** - Automatically splits texts longer than 140 characters and merges audio chunks
 - 🔧 **Advanced playback modes** - Choose between batch (generate all → merge → play) or sequential (generate → play one by one)
 - 🔄 **Pipe input support** - Accept text from stdin: `echo "text" | vp`
+- 🚀 **Background execution** - Run with `--bg` to return shell control immediately while audio generates and plays
 - 🔇 **Clean output** - Suppresses technical output by default (use `--verbose` to see debug info)
 - ⚙️ **Configuration file** - Store your preferred settings in `~/.config/vp/config.toml`
 
@@ -105,6 +106,18 @@ vp "very long text..."
 vp "text" --strict-length
 ```
 
+### Background Execution
+
+```bash
+# Run in background (returns shell control immediately)
+vp --bg "こんにちは、世界！"
+
+# Combine with other options
+vp --bg -p karin-happy "こんにちは、世界！"
+vp --bg -o output.wav "こんにちは、世界！"
+echo "こんにちは" | vp --bg
+```
+
 ### Playback Modes
 
 ```bash
@@ -185,6 +198,7 @@ Options:
       --pitch <VALUE>            Pitch (-300 - 300)
       --strict-length            Reject input longer than 140 characters (default: false, allows splitting)
       --playback-mode <MODE>     Playback mode: sequential or batch (default: batch)
+      --bg                       Run in background (return immediately)
   -v, --verbose                  Enable verbose output (show VOICEPEAK debug messages)
   -h, --help                     Print help
   -V, --version                  Print version

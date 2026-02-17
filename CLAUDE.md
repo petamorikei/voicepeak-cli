@@ -12,6 +12,7 @@ It provides enhanced functionality including:
 - Automatic audio playback with mpv when no output file is specified
 - Temporary file management for audio playback
 - File locking for safe concurrent execution
+- Background execution with `--bg` flag (fork + setsid)
 - All original VOICEPEAK CLI options are supported
 
 The application wraps `/Applications/voicepeak.app/Contents/MacOS/voicepeak` and requires mpv for audio playback.
@@ -44,7 +45,7 @@ The project is structured as both a library and binary crate using Rust 2018 mod
 - `src/env_check.rs` - Environment validation (macOS, VOICEPEAK, mpv)
 - `src/text_splitter.rs` - Text splitting for 140-character limit handling
 - `src/config.rs` - Configuration file management for presets
-- `Cargo.toml` - Project configuration with dependencies: clap, tempfile, serde, serde_json, toml, dirs
+- `Cargo.toml` - Project configuration with dependencies: clap, tempfile, serde, serde_json, toml, dirs, libc
 
 Key components:
 - `VoicePreset` struct combines narrator and emotion settings
@@ -114,4 +115,7 @@ speed = 120
 # Reject long text (strict mode)
 ./target/debug/vp -s "Very long text..." --strict-length -p karin-normal
 # Error: Input text is too long (183 characters). Maximum allowed is 140 characters.
+
+# Background execution (return shell control immediately)
+./target/debug/vp --bg "Hello world" -p karin-normal
 ```
