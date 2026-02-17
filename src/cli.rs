@@ -106,6 +106,12 @@ pub fn build_cli() -> Command {
                 .help("Enable verbose output (show VOICEPEAK debug messages)")
                 .action(clap::ArgAction::SetTrue),
         )
+        .arg(
+            Arg::new("bg")
+                .long("bg")
+                .help("Run in background (return immediately)")
+                .action(clap::ArgAction::SetTrue),
+        )
 }
 
 pub fn handle_matches(matches: clap::ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
@@ -245,6 +251,35 @@ fn run_voicepeak(
             Install ffmpeg: https://ffmpeg.org/download.html"
                 .into(),
         );
+    }
+
+    let bg = matches.get_flag("bg");
+
+    if bg {
+        unsafe {
+            let pid = libc::fork();
+            match pid {
+                -1 => return Err("Failed to fork background process".into()),
+                0 => {
+                    // Child: detach session and suppress output
+                    libc::setsid();
+                    let devnull = libc::open(
+                        c"/dev/null".as_ptr(),
+                        libc::O_RDWR,
+                    );
+                    if devnull >= 0 {
+                        libc::dup2(devnull, libc::STDOUT_FILENO);
+                        libc::dup2(devnull, libc::STDERR_FILENO);
+                        libc::close(devnull);
+                    }
+                    // Child continues execution below
+                }
+                _ => {
+                    // Parent: return immediately
+                    return Ok(());
+                }
+            }
+        }
     }
 
     if should_play {
