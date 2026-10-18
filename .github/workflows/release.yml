@@ -13,7 +13,7 @@ env:
 jobs:
   check-tag:
     name: Check for version tag
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     if: github.event.workflow_run.conclusion == 'success'
     outputs:
       tag: ${{ steps.tag.outputs.name }}
@@ -40,7 +40,7 @@ jobs:
 
   publish:
     name: Publish to crates.io
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: check-tag
     if: needs.check-tag.outputs.has_tag == 'true'
     steps:
@@ -78,7 +78,7 @@ jobs:
 
   create-release:
     name: Create GitHub Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [check-tag, publish]
     permissions:
       contents: write
