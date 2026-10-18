@@ -11,6 +11,38 @@ pub fn check_ffmpeg_available() -> bool {
         .unwrap_or(false)
 }
 
+struct WavFormat {
+    channels: u16,
+    sample_rate: u32,
+    bits_per_sample: u16,
+}
+
+/// Reads the format of a PCM WAV file by scanning its RIFF chunks for `fmt `.
+fn read_wav_format(path: &Path) -> Result<WavFormat, Box<dyn std::error::Error>> {
+    let data = std::fs::read(path)?;
+    if data.len() < 12 || &data[0..4] != b"RIFF" || &data[8..12] != b"WAVE" {
+        return Err(format!("Not a WAV file: {}", path.display()).into());
+    }
+
+    let mut pos = 12;
+    while pos + 8 <= data.len() {
+        let id = &data[pos..pos + 4];
+        let size = u32::from_le_bytes(data[pos + 4..pos + 8].try_into()?) as usize;
+        let body = pos + 8;
+        if id == b"fmt " && size >= 16 && body + 16 <= data.len() {
+            return Ok(WavFormat {
+                channels: u16::from_le_bytes(data[body + 2..body + 4].try_into()?),
+                sample_rate: u32::from_le_bytes(data[body + 4..body + 8].try_into()?),
+                bits_per_sample: u16::from_le_bytes(data[body + 14..body + 16].try_into()?),
+            });
+        }
+        // Chunks are padded to an even size
+        pos = body + size + (size & 1);
+    }
+
+    Err(format!("No fmt chunk found in WAV file: {}", path.display()).into())
+}
+
 pub fn merge_audio_files(
     input_files: &[&Path],
     output_path: &Path,
@@ -29,15 +61,22 @@ pub fn merge_audio_files(
     let temp_dir = tempfile::tempdir()?;
     let concat_file = temp_dir.path().join("concat_list.txt");
 
-    // Create 1-second silence audio file
+    // Create 1-second silence audio file matching the input format,
+    // since stream copy requires all concatenated files to share it
+    let format = read_wav_format(input_files[0])?;
     let silence_path = temp_dir.path().join("silence.wav");
     let silence_status = Command::new("ffmpeg")
         .arg("-f")
         .arg("lavfi")
         .arg("-i")
-        .arg("anullsrc=channel_layout=mono:sample_rate=44100")
+        .arg(format!(
+            "anullsrc=channel_layout={}c:sample_rate={}",
+            format.channels, format.sample_rate
+        ))
         .arg("-t")
         .arg("1") // 1 second
+        .arg("-c:a")
+        .arg(format!("pcm_s{}le", format.bits_per_sample))
         .arg("-y")
         .arg("-loglevel")
         .arg("error")

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Playback cutting off at the beginning and end: mpv's coreaudio output failed with mono audio on some devices and fell back to avfoundation; audio is now upmixed to stereo
+- Silence inserted between merged chunks now matches the input WAV format (VOICEPEAK outputs 48kHz), so it is exactly 1 second
+
+### Changed
+- Docs use the English narrator name `Natsuki Karin`; Japanese narrator names crash VOICEPEAK 1.2.23
+
 ## [0.8.0] - 2026-02-17
 
 ### Added

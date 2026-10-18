@@ -6,6 +6,10 @@ pub fn play_audio_and_cleanup(file_path: &Path) -> Result<(), Box<dyn std::error
     let status = ProcessCommand::new("mpv")
         .arg("--no-video")
         .arg("--really-quiet")
+        // VOICEPEAK outputs mono audio. On some devices mpv's coreaudio output
+        // fails with mono and falls back to avfoundation, which cuts off the
+        // beginning and end of playback. Upmixing to stereo keeps coreaudio.
+        .arg("--audio-channels=stereo")
         .arg(file_path)
         .status()?;
 

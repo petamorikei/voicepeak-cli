@@ -57,16 +57,16 @@ cargo install voicepeak-cli
 vp "こんにちは、世界！"
 
 # With explicit narrator
-vp "こんにちは、世界！" --narrator "夏色花梨"
+vp "こんにちは、世界！" --narrator "Natsuki Karin"
 
 # Save to file instead of auto-play
-vp "こんにちは、世界！" --narrator "夏色花梨" -o output.wav
+vp "こんにちは、世界！" --narrator "Natsuki Karin" -o output.wav
 
 # Read from file
-vp -t input.txt --narrator "夏色花梨"
+vp -t input.txt --narrator "Natsuki Karin"
 
 # Pipe input
-echo "こんにちは、世界！" | vp --narrator "夏色花梨"
+echo "こんにちは、世界！" | vp --narrator "Natsuki Karin"
 cat document.txt | vp -p karin-happy
 ```
 
@@ -87,13 +87,13 @@ vp "こんにちは、世界！" -p karin-normal --emotion "happy=50"
 
 ```bash
 # Control speech parameters
-vp "こんにちは、世界！" --narrator "夏色花梨" --speed 120 --pitch 50
+vp "こんにちは、世界！" --narrator "Natsuki Karin" --speed 120 --pitch 50
 
 # List available narrators
 vp --list-narrator
 
 # List emotions for a specific narrator
-vp --list-emotion "夏色花梨"
+vp --list-emotion "Natsuki Karin"
 ```
 
 ### Text Length Handling
@@ -145,7 +145,7 @@ default_preset = "karin-custom"
 
 [[presets]]
 name = "karin-custom"
-narrator = "夏色花梨"
+narrator = "Natsuki Karin"
 emotions = [
     { name = "hightension", value = 10 },
     { name = "sasayaki", value = 20 },
@@ -155,12 +155,12 @@ speed = 120
 
 [[presets]]
 name = "karin-normal"
-narrator = "夏色花梨"
+narrator = "Natsuki Karin"
 emotions = []
 
 [[presets]]
 name = "karin-happy"
-narrator = "夏色花梨"
+narrator = "Natsuki Karin"
 emotions = [{ name = "hightension", value = 50 }]
 ```
 
@@ -172,7 +172,7 @@ emotions = [{ name = "hightension", value = 50 }]
 #### Preset Fields
 
 - `name`: Unique preset identifier
-- `narrator`: Voice narrator name
+- `narrator`: Voice narrator name. Use the name shown by `vp --list-narrator` (e.g. `Natsuki Karin`). Japanese names such as `夏色花梨` crash VOICEPEAK 1.2.23
 - `emotions`: Array of emotion parameters with `name` and `value`
 - `pitch`: Optional pitch adjustment (-300 to 300)
 - `speed`: Optional speed adjustment (50 to 200)

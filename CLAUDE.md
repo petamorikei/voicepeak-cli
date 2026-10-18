@@ -77,12 +77,12 @@ default_preset = "karin-normal"
 
 [[presets]]
 name = "karin-normal"
-narrator = "夏色花梨"
+narrator = "Natsuki Karin"
 emotions = []
 
 [[presets]]
 name = "karin-happy"
-narrator = "夏色花梨"
+narrator = "Natsuki Karin"
 emotions = [{ name = "hightension", value = 50 }]
 pitch = 30
 speed = 120
@@ -90,6 +90,7 @@ speed = 120
 
 - `default_preset`: Optional default preset name (can be `null` or omitted)
 - `presets`: Array of available voice presets
+- `narrator` must be the name shown by `--list-narrator` (e.g. `Natsuki Karin`); Japanese names such as `夏色花梨` crash VOICEPEAK 1.2.23
 
 ## Usage Examples
 
@@ -101,7 +102,7 @@ speed = 120
 ./target/debug/vp -s "こんにちは" -p karin-happy
 
 # Override individual parameters
-./target/debug/vp -s "こんにちは" -n "夏色花梨" -e "happy=30"
+./target/debug/vp -s "こんにちは" -n "Natsuki Karin" -e "happy=30"
 
 # Save to file (no auto-play)
 ./target/debug/vp -s "Hello" -o output.wav
