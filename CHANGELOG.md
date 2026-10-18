@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Docs use the English narrator name `Natsuki Karin`; Japanese narrator names crash VOICEPEAK 1.2.23
+- Retry wait now uses exponential backoff (0.5s, 1s, 2s, 4s, then 5s) instead of a fixed 5 seconds
+- Removed `pkill -f voicepeak` before retries, which could kill unrelated processes such as the VOICEPEAK editor; timed-out processes are still killed by PID
 
 ## [0.8.0] - 2026-02-17
 

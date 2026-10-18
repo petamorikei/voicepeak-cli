@@ -127,9 +127,13 @@ fn kill_process_by_id(pid: u32) {
     let _ = Command::new("kill").arg("-9").arg(pid.to_string()).output();
 }
 
-fn kill_all_voicepeak_processes() {
-    use std::process::Command;
-    let _ = Command::new("pkill").arg("-f").arg("voicepeak").output();
+/// Exponential backoff: 0.5s, 1s, 2s, 4s, then capped at 5s.
+/// VOICEPEAK usually crashes right after launch, so a short first wait is enough.
+fn retry_delay(attempt: usize) -> Duration {
+    const BASE_MS: u64 = 500;
+    const MAX_MS: u64 = 5000;
+    let exponent = attempt.saturating_sub(1).min(16) as u32;
+    Duration::from_millis((BASE_MS << exponent).min(MAX_MS))
 }
 
 impl VoicepeakCommand {
@@ -252,13 +256,16 @@ impl VoicepeakCommand {
                 Err(e) => {
                     last_error = Some(e);
                     if attempt < max_retries {
+                        // A timed-out process has already been killed by PID,
+                        // so no further cleanup is needed before retrying
+                        let delay = retry_delay(attempt);
                         eprintln!(
-                            "VOICEPEAK command failed (attempt {}/{}), retrying in 5 seconds...",
-                            attempt, max_retries
+                            "VOICEPEAK command failed (attempt {}/{}), retrying in {:.1} seconds...",
+                            attempt,
+                            max_retries,
+                            delay.as_secs_f64()
                         );
-                        // Kill any remaining VOICEPEAK processes before retry
-                        kill_all_voicepeak_processes();
-                        thread::sleep(Duration::from_secs(5));
+                        thread::sleep(delay);
                     }
                 }
             }
