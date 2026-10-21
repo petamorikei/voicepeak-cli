@@ -12,10 +12,10 @@ This wrapper enhances the original VOICEPEAK CLI with several powerful features:
 - 📝 **Voice presets** - Save and reuse combinations of narrator, emotions, and pitch settings
 - 📜 **Long text support** - Automatically splits texts longer than 140 characters and merges audio chunks
 - 🔧 **Advanced playback modes** - Choose between batch (generate all → merge → play) or sequential (generate → play one by one)
-- 🔄 **Pipe input support** - Accept text from stdin: `echo "text" | vp`
+- 🔄 **Pipe input support** - Accept text from stdin: `echo "text" | vpsay`
 - 🚀 **Background execution** - Run with `--bg` to return shell control immediately while audio generates and plays
 - 🔇 **Clean output** - Suppresses technical output by default (use `--verbose` to see debug info)
-- ⚙️ **Configuration file** - Store your preferred settings in `~/.config/vp/config.toml`
+- ⚙️ **Configuration file** - Store your preferred settings in `~/.config/vpsay/config.toml`
 
 ## Key Benefits
 
@@ -54,89 +54,91 @@ cargo install voicepeak-cli
 
 ```bash
 # Simple text-to-speech (requires preset or --narrator)
-vp "こんにちは、世界！"
+vpsay "こんにちは、世界！"
 
 # With explicit narrator
-vp "こんにちは、世界！" --narrator "Natsuki Karin"
+vpsay "こんにちは、世界！" --narrator "Natsuki Karin"
 
 # Save to file instead of auto-play
-vp "こんにちは、世界！" --narrator "Natsuki Karin" -o output.wav
+vpsay "こんにちは、世界！" --narrator "Natsuki Karin" -o output.wav
 
 # Read from file
-vp -t input.txt --narrator "Natsuki Karin"
+vpsay -t input.txt --narrator "Natsuki Karin"
 
 # Pipe input
-echo "こんにちは、世界！" | vp --narrator "Natsuki Karin"
-cat document.txt | vp -p karin-happy
+echo "こんにちは、世界！" | vpsay --narrator "Natsuki Karin"
+cat document.txt | vpsay -p karin-happy
 ```
 
 ### Using Presets
 
 ```bash
 # List available presets
-vp --list-presets
+vpsay --list-presets
 
 # Use a preset
-vp "こんにちは、世界！" -p karin-happy
+vpsay "こんにちは、世界！" -p karin-happy
 
 # Override preset settings
-vp "こんにちは、世界！" -p karin-normal --emotion "happy=50"
+vpsay "こんにちは、世界！" -p karin-normal --emotion "happy=50"
 ```
 
 ### Voice Controls
 
 ```bash
 # Control speech parameters
-vp "こんにちは、世界！" --narrator "Natsuki Karin" --speed 120 --pitch 50
+vpsay "こんにちは、世界！" --narrator "Natsuki Karin" --speed 120 --pitch 50
 
 # List available narrators
-vp --list-narrator
+vpsay --list-narrator
 
 # List emotions for a specific narrator
-vp --list-emotion "Natsuki Karin"
+vpsay --list-emotion "Natsuki Karin"
 ```
 
 ### Text Length Handling
 
 ```bash
 # Allow automatic text splitting (default)
-vp "very long text..."
+vpsay "very long text..."
 
 # Strict mode: reject texts longer than 140 characters
-vp "text" --strict-length
+vpsay "text" --strict-length
 ```
 
 ### Background Execution
 
 ```bash
 # Run in background (returns shell control immediately)
-vp --bg "こんにちは、世界！"
+vpsay --bg "こんにちは、世界！"
 
 # Combine with other options
-vp --bg -p karin-happy "こんにちは、世界！"
-vp --bg -o output.wav "こんにちは、世界！"
-echo "こんにちは" | vp --bg
+vpsay --bg -p karin-happy "こんにちは、世界！"
+vpsay --bg -o output.wav "こんにちは、世界！"
+echo "こんにちは" | vpsay --bg
 ```
 
 ### Playback Modes
 
 ```bash
 # Batch mode: generate all chunks first, merge, then play (default)
-vp "long text" --playback-mode batch
+vpsay "long text" --playback-mode batch
 
 # Sequential mode: generate and play chunks one by one
-vp "long text" --playback-mode sequential
+vpsay "long text" --playback-mode sequential
 
 # Long text file output (uses ffmpeg to merge chunks)
-vp "very long text" -o output.wav
+vpsay "very long text" -o output.wav
 
 # For sequential playback without ffmpeg
-vp "long text" --playback-mode sequential
+vpsay "long text" --playback-mode sequential
 ```
 
 ## Configuration
 
-Configuration is stored in `~/.config/vp/config.toml`. The file is automatically created on first run.
+Configuration is stored in `~/.config/vpsay/config.toml`. The file is automatically created on first run.
+
+> **Upgrading from v0.8.x or earlier:** The command was renamed from `vp` to `vpsay` in v0.9.0 to avoid conflicting with Vite+ (`vp`). If `~/.config/vpsay/config.toml` does not exist, your old `~/.config/vp/config.toml` is copied there automatically on first run.
 
 ### Example Configuration
 
@@ -172,7 +174,7 @@ emotions = [{ name = "hightension", value = 50 }]
 #### Preset Fields
 
 - `name`: Unique preset identifier
-- `narrator`: Voice narrator name. Use the name shown by `vp --list-narrator` (e.g. `Natsuki Karin`). Japanese names such as `夏色花梨` crash VOICEPEAK 1.2.23
+- `narrator`: Voice narrator name. Use the name shown by `vpsay --list-narrator` (e.g. `Natsuki Karin`). Japanese names such as `夏色花梨` crash VOICEPEAK 1.2.23
 - `emotions`: Array of emotion parameters with `name` and `value`
 - `pitch`: Optional pitch adjustment (-300 to 300)
 - `speed`: Optional speed adjustment (50 to 200)
@@ -180,7 +182,7 @@ emotions = [{ name = "hightension", value = 50 }]
 ## Command-Line Options
 
 ```
-Usage: vp [OPTIONS] [TEXT]
+Usage: vpsay [OPTIONS] [TEXT]
 
 Arguments:
   [TEXT]  Text to say (or pipe from stdin)
@@ -213,9 +215,9 @@ When multiple sources specify the same parameter, the priority order is:
 3. Default values / none (lowest priority)
 
 For example:
-- `vp "text" -p my-preset --pitch 100` uses pitch=100 (CLI override)
-- `vp "text" -p my-preset` uses preset's pitch value
-- `vp "text" --narrator "voice"` uses no pitch adjustment
+- `vpsay "text" -p my-preset --pitch 100` uses pitch=100 (CLI override)
+- `vpsay "text" -p my-preset` uses preset's pitch value
+- `vpsay "text" --narrator "voice"` uses no pitch adjustment
 
 ## License
 

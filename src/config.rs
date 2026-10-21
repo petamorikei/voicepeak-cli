@@ -49,7 +49,7 @@ pub struct Config {
 
 pub fn get_config_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
     let home_dir = dirs::home_dir().ok_or("Could not find home directory")?;
-    let config_dir = home_dir.join(".config").join("vp");
+    let config_dir = home_dir.join(".config").join("vpsay");
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)?;
@@ -58,8 +58,24 @@ pub fn get_config_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
     Ok(config_dir.join("config.toml"))
 }
 
+// Config location used before the command was renamed from `vp` to `vpsay`
+fn get_legacy_config_path() -> Option<PathBuf> {
+    dirs::home_dir().map(|home| home.join(".config").join("vp").join("config.toml"))
+}
+
 pub fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
     let config_path = get_config_path()?;
+
+    if !config_path.exists() {
+        if let Some(legacy_path) = get_legacy_config_path().filter(|p| p.exists()) {
+            fs::copy(&legacy_path, &config_path)?;
+            eprintln!(
+                "Migrated config from {} to {}",
+                legacy_path.display(),
+                config_path.display()
+            );
+        }
+    }
 
     if !config_path.exists() {
         let default_config = Config::default();

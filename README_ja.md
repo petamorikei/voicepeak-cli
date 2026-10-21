@@ -12,10 +12,10 @@
 - 📝 **音声プリセット** - ナレーター、感情、ピッチ設定の組み合わせを保存・再利用
 - 📜 **長文対応** - 140文字を超えるテキストを自動分割し、音声チャンクを結合
 - 🔧 **高度な再生モード** - バッチ（全生成→結合→再生）またはシーケンシャル（1つずつ生成・再生）を選択
-- 🔄 **パイプ入力対応** - stdinからテキストを受け取り: `echo "テキスト" | vp`
+- 🔄 **パイプ入力対応** - stdinからテキストを受け取り: `echo "テキスト" | vpsay`
 - 🚀 **バックグラウンド実行** - `--bg`で音声生成・再生中にシェルの制御を即座に返す
 - 🔇 **クリーンな出力** - デフォルトで技術的な出力を抑制（`--verbose`でデバッグ情報表示）
-- ⚙️ **設定ファイル** - `~/.config/vp/config.toml`に好みの設定を保存
+- ⚙️ **設定ファイル** - `~/.config/vpsay/config.toml`に好みの設定を保存
 
 ## 主な利点
 
@@ -54,89 +54,91 @@ cargo install voicepeak-cli
 
 ```bash
 # シンプルなテキスト読み上げ（プリセットまたは --narrator が必要）
-vp "こんにちは、世界！"
+vpsay "こんにちは、世界！"
 
 # ナレーターを明示的に指定
-vp "こんにちは、世界！" --narrator "Natsuki Karin"
+vpsay "こんにちは、世界！" --narrator "Natsuki Karin"
 
 # 自動再生ではなくファイルに保存
-vp "こんにちは、世界！" --narrator "Natsuki Karin" -o output.wav
+vpsay "こんにちは、世界！" --narrator "Natsuki Karin" -o output.wav
 
 # ファイルから読み込み
-vp -t input.txt --narrator "Natsuki Karin"
+vpsay -t input.txt --narrator "Natsuki Karin"
 
 # パイプ入力
-echo "こんにちは、世界！" | vp --narrator "Natsuki Karin"
-cat document.txt | vp -p karin-happy
+echo "こんにちは、世界！" | vpsay --narrator "Natsuki Karin"
+cat document.txt | vpsay -p karin-happy
 ```
 
 ### プリセットの使用
 
 ```bash
 # 利用可能なプリセットを一覧表示
-vp --list-presets
+vpsay --list-presets
 
 # プリセットを使用
-vp "こんにちは、世界！" -p karin-happy
+vpsay "こんにちは、世界！" -p karin-happy
 
 # プリセット設定を上書き
-vp "こんにちは、世界！" -p karin-normal --emotion "happy=50"
+vpsay "こんにちは、世界！" -p karin-normal --emotion "happy=50"
 ```
 
 ### 音声制御
 
 ```bash
 # 音声パラメータの制御
-vp "こんにちは、世界！" --narrator "Natsuki Karin" --speed 120 --pitch 50
+vpsay "こんにちは、世界！" --narrator "Natsuki Karin" --speed 120 --pitch 50
 
 # 利用可能なナレーターの一覧
-vp --list-narrator
+vpsay --list-narrator
 
 # 特定のナレーターの感情一覧
-vp --list-emotion "Natsuki Karin"
+vpsay --list-emotion "Natsuki Karin"
 ```
 
 ### テキスト長の処理
 
 ```bash
 # 自動テキスト分割を許可（デフォルト）
-vp "非常に長いテキスト..."
+vpsay "非常に長いテキスト..."
 
 # 厳格モード: 140文字を超えるテキストを拒否
-vp "テキスト" --strict-length
+vpsay "テキスト" --strict-length
 ```
 
 ### バックグラウンド実行
 
 ```bash
 # バックグラウンドで実行（即座にシェルに制御を返す）
-vp --bg "こんにちは、世界！"
+vpsay --bg "こんにちは、世界！"
 
 # 他のオプションとの組み合わせ
-vp --bg -p karin-happy "こんにちは、世界！"
-vp --bg -o output.wav "こんにちは、世界！"
-echo "こんにちは" | vp --bg
+vpsay --bg -p karin-happy "こんにちは、世界！"
+vpsay --bg -o output.wav "こんにちは、世界！"
+echo "こんにちは" | vpsay --bg
 ```
 
 ### 再生モード
 
 ```bash
 # バッチモード: 全チャンクを生成後、結合して再生（デフォルト）
-vp "長いテキスト" --playback-mode batch
+vpsay "長いテキスト" --playback-mode batch
 
 # シーケンシャルモード: チャンクを1つずつ生成・再生
-vp "長いテキスト" --playback-mode sequential
+vpsay "長いテキスト" --playback-mode sequential
 
 # 長いテキストのファイル出力（ffmpegでチャンクを結合）
-vp "非常に長いテキスト" -o output.wav
+vpsay "非常に長いテキスト" -o output.wav
 
 # ffmpegなしでのシーケンシャル再生
-vp "長いテキスト" --playback-mode sequential
+vpsay "長いテキスト" --playback-mode sequential
 ```
 
 ## 設定
 
-設定は `~/.config/vp/config.toml` に保存されます。ファイルは初回実行時に自動作成されます。
+設定は `~/.config/vpsay/config.toml` に保存されます。ファイルは初回実行時に自動作成されます。
+
+> **v0.8.x 以前からのアップグレード:** Vite+（`vp`）との衝突を避けるため、v0.9.0 でコマンド名を `vp` から `vpsay` に変更しました。`~/.config/vpsay/config.toml` が存在しない場合、初回実行時に旧 `~/.config/vp/config.toml` が自動でコピーされます。
 
 ### 設定例
 
@@ -172,7 +174,7 @@ emotions = [{ name = "hightension", value = 50 }]
 #### プリセットフィールド
 
 - `name`: 一意のプリセット識別子
-- `narrator`: 音声ナレーター名。`vp --list-narrator` で表示される名前（例: `Natsuki Karin`）を指定してください。`夏色花梨` のような日本語名を渡すと VOICEPEAK 1.2.23 がクラッシュします
+- `narrator`: 音声ナレーター名。`vpsay --list-narrator` で表示される名前（例: `Natsuki Karin`）を指定してください。`夏色花梨` のような日本語名を渡すと VOICEPEAK 1.2.23 がクラッシュします
 - `emotions`: `name`と`value`を持つ感情パラメータの配列
 - `pitch`: オプションのピッチ調整（-300〜300）
 - `speed`: オプションの速度調整（50〜200）
@@ -180,7 +182,7 @@ emotions = [{ name = "hightension", value = 50 }]
 ## コマンドラインオプション
 
 ```
-使用方法: vp [OPTIONS] [TEXT]
+使用方法: vpsay [OPTIONS] [TEXT]
 
 引数:
   [TEXT]  読み上げるテキスト（またはstdinからのパイプ）
@@ -213,9 +215,9 @@ emotions = [{ name = "hightension", value = 50 }]
 3. デフォルト値 / なし（最低優先度）
 
 例:
-- `vp "テキスト" -p my-preset --pitch 100` は pitch=100 を使用（CLI上書き）
-- `vp "テキスト" -p my-preset` はプリセットのpitch値を使用
-- `vp "テキスト" --narrator "音声"` はピッチ調整なし
+- `vpsay "テキスト" -p my-preset --pitch 100` は pitch=100 を使用（CLI上書き）
+- `vpsay "テキスト" -p my-preset` はプリセットのpitch値を使用
+- `vpsay "テキスト" --narrator "音声"` はピッチ調整なし
 
 ## ライセンス
 

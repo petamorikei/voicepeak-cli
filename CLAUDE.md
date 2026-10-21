@@ -50,7 +50,7 @@ The project is structured as both a library and binary crate using Rust 2018 mod
 Key components:
 - `VoicePreset` struct combines narrator and emotion settings
 - `VoicepeakCommand` provides a builder pattern for VOICEPEAK execution with automatic retry (10 attempts with exponential backoff from 0.5s up to 5s) and 15-second timeout
-- Configurable presets loaded from `~/.config/vp/config.toml`
+- Configurable presets loaded from `~/.config/vpsay/config.toml`
 - Default preset support with fallback behavior
 - Automatic temporary file creation and cleanup for audio playback
 - Integration with system mpv for audio playback
@@ -70,7 +70,7 @@ This structure allows the functionality to be used both as a CLI application and
 
 ## Configuration
 
-The application uses `~/.config/vp/config.toml` for preset configuration:
+The application uses `~/.config/vpsay/config.toml` for preset configuration:
 
 ```toml
 default_preset = "karin-normal"
@@ -96,27 +96,27 @@ speed = 120
 
 ```bash
 # Basic text-to-speech with auto-play (uses default preset if configured)
-./target/debug/vp -s "Hello world"
+./target/debug/vpsay -s "Hello world"
 
 # Use specific preset
-./target/debug/vp -s "こんにちは" -p karin-happy
+./target/debug/vpsay -s "こんにちは" -p karin-happy
 
 # Override individual parameters
-./target/debug/vp -s "こんにちは" -n "Natsuki Karin" -e "happy=30"
+./target/debug/vpsay -s "こんにちは" -n "Natsuki Karin" -e "happy=30"
 
 # Save to file (no auto-play)
-./target/debug/vp -s "Hello" -o output.wav
+./target/debug/vpsay -s "Hello" -o output.wav
 
 # List available presets (shows default)
-./target/debug/vp --list-presets
+./target/debug/vpsay --list-presets
 
 # Long text with automatic splitting (default behavior)
-./target/debug/vp -s "Very long text..." -p karin-normal
+./target/debug/vpsay -s "Very long text..." -p karin-normal
 
 # Reject long text (strict mode)
-./target/debug/vp -s "Very long text..." --strict-length -p karin-normal
+./target/debug/vpsay -s "Very long text..." --strict-length -p karin-normal
 # Error: Input text is too long (183 characters). Maximum allowed is 140 characters.
 
 # Background execution (return shell control immediately)
-./target/debug/vp --bg "Hello world" -p karin-normal
+./target/debug/vpsay --bg "Hello world" -p karin-normal
 ```

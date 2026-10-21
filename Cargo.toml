@@ -13,7 +13,7 @@ categories = ["command-line-utilities", "multimedia::audio"]
 exclude = ["target/*", ".github/*", "CLAUDE.md"]
 
 [[bin]]
-name = "vp"
+name = "vpsay"
 path = "src/main.rs"
 
 [dependencies]

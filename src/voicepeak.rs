@@ -29,7 +29,7 @@ fn get_lock_file() -> Result<File, Box<dyn std::error::Error>> {
 
 fn get_lock_file_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
     let config_dir = dirs::config_dir().ok_or("Could not determine config directory")?;
-    Ok(config_dir.join("vp").join("vp.lock"))
+    Ok(config_dir.join("vpsay").join("vpsay.lock"))
 }
 
 pub fn list_narrator() {

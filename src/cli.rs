@@ -9,7 +9,7 @@ use crate::text_splitter::{check_text_length, split_text, MAX_CHARS};
 use crate::voicepeak::{list_emotion, list_narrator, VoicepeakCommand};
 
 pub fn build_cli() -> Command {
-    Command::new("voicepeak-cli")
+    Command::new("vpsay")
         .version("0.8.1")
         .about("VOICEPEAK CLI wrapper with presets and auto-play")
         .arg(

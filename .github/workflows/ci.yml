@@ -79,5 +79,5 @@ jobs:
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v7
         with:
-          name: vp-macos
-          path: target/release/vp
+          name: vpsay-macos
+          path: target/release/vpsay
